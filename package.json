@@ -2,7 +2,12 @@
   "name": "browser-agent",
   "module": "index.ts",
   "type": "module",
+  "bin": {
+    "browser-agent": "./index.ts"
+  },
   "scripts": {
+    "start": "bun run index.ts",
+    "dev": "bun --watch index.ts -i",
     "install-deps": "PUPPETEER_SKIP_DOWNLOAD=true bun add puppeteer commander"
   },
   "devDependencies": {
