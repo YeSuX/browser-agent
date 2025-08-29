@@ -7,7 +7,8 @@
   },
   "scripts": {
     "start": "bun run index.ts",
-    "dev": "bun --watch index.ts -i",
+    "dev": "bun --watch index.ts",
+    "test-ai": "bun run test-ai.ts",
     "install-deps": "PUPPETEER_SKIP_DOWNLOAD=true bun add puppeteer commander"
   },
   "devDependencies": {
