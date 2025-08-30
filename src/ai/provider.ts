@@ -58,29 +58,7 @@ export class AIProvider {
         }
     }
 
-    /**
-     * 简单的问答接口
-     */
-    async ask(question: string, config?: Partial<AIConfig>): Promise<string> {
-        const messages: AIMessage[] = [{ role: "user", content: question }];
-        return this.generateText(messages, config);
-    }
 
-    /**
-     * 流式问答接口
-     */
-    async *askStream(
-        question: string,
-        config?: Partial<AIConfig>
-    ): AsyncGenerator<string, void, unknown> {
-        const messages: AIMessage[] = [{ role: "user", content: question }];
-        yield* this.generateStreamText(messages, config);
-    }
 }
 
-/**
- * 创建 AI 提供商实例
- */
-export function createAIProvider(config: AIConfig): AIProvider {
-    return new AIProvider(config);
-}
+

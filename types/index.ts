@@ -28,18 +28,7 @@ export interface BrowserAgentConfig {
     cli: CLIConfig;
 }
 
-export interface AgentResponse {
-    success: boolean;
-    data?: any;
-    error?: string;
-}
-
 // 命令类型
 export type CommandType = 'help' | 'version' | 'status' | 'exit' | 'quit';
 
-// 事件类型
-export interface AgentEvent {
-    type: 'input' | 'output' | 'error' | 'complete';
-    data: any;
-    timestamp: Date;
-}
+

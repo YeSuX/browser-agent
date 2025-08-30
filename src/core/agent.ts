@@ -38,12 +38,7 @@ export class BrowserAgent {
         }
     }
 
-    /**
-     * 停止Agent
-     */
-    stop(): void {
-        this.cliInterface.stop();
-    }
+
 
     /**
      * 执行命令
@@ -95,19 +90,7 @@ export class BrowserAgent {
         process.exit(0);
     }
 
-    /**
-     * 获取AI提供商实例（用于高级用法）
-     */
-    getAIProvider(): AIProvider {
-        return this.aiProvider;
-    }
 
-    /**
-     * 获取CLI界面实例（用于高级用法）
-     */
-    getCLIInterface(): CLIInterface {
-        return this.cliInterface;
-    }
 }
 
 /**

@@ -115,7 +115,7 @@ export class CLIInterface {
 /**
  * 创建命令行程序
  */
-export function createCLIProgram(config: CLIConfig): Command {
+export function createCLIProgram(_config?: CLIConfig): Command {
     const program = new Command();
 
     program
