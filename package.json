@@ -1,19 +1,56 @@
 {
   "name": "browser-agent",
-  "module": "index.ts",
+  "version": "1.0.0",
+  "description": "浏览器自动化代理工具",
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "type": "module",
   "bin": {
-    "browser-agent": "./index.ts"
+    "browser-agent": "./bin/browser-agent.js"
   },
+  "files": [
+    "lib",
+    "bin",
+    "types"
+  ],
   "scripts": {
+    "build": "bun run clean && bun run compile",
+    "clean": "rm -rf lib",
+    "compile": "bunx tsc",
     "start": "bun run index.ts",
     "dev": "bun --watch index.ts",
     "test-ai": "bun run test-ai.ts",
-    "install-deps": "PUPPETEER_SKIP_DOWNLOAD=true bun add puppeteer commander"
+    "install-deps": "PUPPETEER_SKIP_DOWNLOAD=true bun add puppeteer commander",
+    "prepublishOnly": "bun run build",
+    "publish:beta": "npm publish --tag beta"
+  },
+  "keywords": [
+    "browser",
+    "agent",
+    "automation",
+    "ai",
+    "cli",
+    "deepseek"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/browser-agent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/browser-agent/issues"
+  },
+  "homepage": "https://github.com/yourusername/browser-agent#readme",
+  "engines": {
+    "node": ">=18.0.0",
+    "bun": ">=1.0.0"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/node": "^24.3.0"
+    "@types/node": "^24.3.0",
+    "typescript": "^5.0.0"
   },
   "peerDependencies": {
     "typescript": "^5"
