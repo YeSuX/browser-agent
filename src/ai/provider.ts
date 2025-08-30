@@ -5,60 +5,61 @@
 import { generateText, streamText } from "ai";
 import { createDeepSeek } from "@ai-sdk/deepseek";
 import type { AIMessage, AIConfig } from "../../types/index.js";
+import { ACTION_PARSER_PROMPT } from "../prompts/action-parser.js";
 
 /**
  * AI 提供商类
  */
 export class AIProvider {
-    private provider: any;
+  private provider: any;
 
-    constructor(config: AIConfig) {
-        this.provider = createDeepSeek({
-            apiKey: config.apiKey,
-            fetch: globalThis.fetch,
-        });
+  constructor(config: AIConfig) {
+    this.provider = createDeepSeek({
+      apiKey: config.apiKey,
+      fetch: globalThis.fetch,
+    });
+  }
+
+  /**
+   * 生成文本响应（非流式）
+   */
+  async generateText(
+    messages: AIMessage[],
+    config?: Partial<AIConfig>
+  ): Promise<string> {
+    try {
+      const result = await generateText({
+        model: this.provider(config?.model || "deepseek-chat"),
+        messages,
+        temperature: config?.temperature || 0.7,
+      });
+
+      return result.text;
+    } catch (error) {
+      throw new Error(`AI生成失败: ${error}`);
     }
+  }
 
-    /**
-     * 生成文本响应（非流式）
-     */
-    async generateText(messages: AIMessage[], config?: Partial<AIConfig>): Promise<string> {
-        try {
-            const result = await generateText({
-                model: this.provider(config?.model || "deepseek-chat"),
-                messages,
-                temperature: config?.temperature || 0.7,
-            });
+  /**
+   * 生成流式文本响应
+   */
+  async *generateStreamText(
+    messages: AIMessage[],
+    config?: Partial<AIConfig>
+  ): AsyncGenerator<string, void, unknown> {
+    try {
+      const result = await streamText({
+        model: this.provider(config?.model || "deepseek-chat"),
+        system: ACTION_PARSER_PROMPT,
+        messages,
+        temperature: config?.temperature || 0.7,
+      });
 
-            return result.text;
-        } catch (error) {
-            throw new Error(`AI生成失败: ${error}`);
-        }
+      for await (const delta of result.textStream) {
+        yield delta;
+      }
+    } catch (error) {
+      throw new Error(`AI流式生成失败: ${error}`);
     }
-
-    /**
-     * 生成流式文本响应
-     */
-    async *generateStreamText(
-        messages: AIMessage[],
-        config?: Partial<AIConfig>
-    ): AsyncGenerator<string, void, unknown> {
-        try {
-            const result = await streamText({
-                model: this.provider(config?.model || "deepseek-chat"),
-                messages,
-                temperature: config?.temperature || 0.7,
-            });
-
-            for await (const delta of result.textStream) {
-                yield delta;
-            }
-        } catch (error) {
-            throw new Error(`AI流式生成失败: ${error}`);
-        }
-    }
-
-
+  }
 }
-
-
