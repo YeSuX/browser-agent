@@ -71,6 +71,7 @@ export class AIProvider {
     try {
       const result = await streamText({
         model: this.provider(config?.model || "deepseek-chat"),
+        system: ACTION_PARSER_PROMPT,
         tools: {
           puppeteer: tool({
             description: "使用 Puppeteer 工具执行浏览器自动化操作",
@@ -81,7 +82,6 @@ export class AIProvider {
             },
           }),
         },
-        system: ACTION_PARSER_PROMPT,
         messages,
       });
 
