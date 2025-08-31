@@ -116,31 +116,29 @@ export class CLIInterface {
  * 创建命令行程序
  */
 export function createCLIProgram(_config?: CLIConfig): Command {
-    const program = new Command();
+  const program = new Command();
 
-    program
-        .name("browser-agent")
-        .description("浏览器自动化代理工具")
-        .version("1.0.0");
+  program
+    .name("browser-agent")
+    .description("浏览器自动化代理工具")
+    .version("1.0.0");
 
-    program
-        .option("-i, --interactive", "启动交互式模式")
-        .option("-c, --command <command>", "执行指定命令")
-        .option("-v, --verbose", "详细输出模式");
+  program
+    .option("-i, --interactive", "启动交互式模式")
+    .option("-c, --command <command>", "执行指定命令");
 
-    return program;
+  return program;
 }
 
 /**
  * 解析命令行参数
  */
 export function parseCLIArgs(program: Command): CLIConfig {
-    program.parse();
-    const options = program.opts();
+  program.parse();
+  const options = program.opts();
 
-    return {
-        interactive: options.interactive || false,
-        command: options.command,
-        verbose: options.verbose || false,
-    };
+  return {
+    interactive: options.interactive || false,
+    command: options.command,
+  };
 }

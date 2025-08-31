@@ -9,16 +9,14 @@ export interface AIMessage {
 }
 
 export interface AIConfig {
-    apiKey: string;
-    model?: string;
-    temperature?: number;
+  apiKey: string;
+  model?: string;
 }
 
 // CLI 相关类型
 export interface CLIConfig {
-    interactive?: boolean;
-    command?: string;
-    verbose?: boolean;
+  interactive?: boolean;
+  command?: string;
 }
 
 // Agent 核心类型

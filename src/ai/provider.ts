@@ -2,7 +2,7 @@
  * AI 提供商模块
  */
 
-import { generateText, streamText } from "ai";
+import { streamText } from "ai";
 import { createDeepSeek } from "@ai-sdk/deepseek";
 import type { AIMessage, AIConfig } from "../../types/index.js";
 import { ACTION_PARSER_PROMPT } from "../prompts/action-parser.js";
@@ -21,26 +21,6 @@ export class AIProvider {
   }
 
   /**
-   * 生成文本响应（非流式）
-   */
-  async generateText(
-    messages: AIMessage[],
-    config?: Partial<AIConfig>
-  ): Promise<string> {
-    try {
-      const result = await generateText({
-        model: this.provider(config?.model || "deepseek-chat"),
-        messages,
-        temperature: config?.temperature || 0.7,
-      });
-
-      return result.text;
-    } catch (error) {
-      throw new Error(`AI生成失败: ${error}`);
-    }
-  }
-
-  /**
    * 生成流式文本响应
    */
   async *generateStreamText(
@@ -52,7 +32,6 @@ export class AIProvider {
         model: this.provider(config?.model || "deepseek-chat"),
         system: ACTION_PARSER_PROMPT,
         messages,
-        temperature: config?.temperature || 0.7,
       });
 
       for await (const delta of result.textStream) {
