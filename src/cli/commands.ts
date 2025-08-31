@@ -27,6 +27,8 @@ export class CommandHandler {
                 return { handled: true, output: this.getVersionText() };
             case 'status':
                 return { handled: true, output: this.getStatusText() };
+            case 'test':
+                return { handled: true, output: this.getTestText() };
             case 'exit':
             case 'quit':
                 return { handled: true, output: 'exit' };
@@ -46,6 +48,7 @@ export class CommandHandler {
   quit     - 退出程序
   version  - 显示版本信息
   status   - 显示当前状态
+  test     - 进入调试模式
 
 💡 提示: 直接输入其他内容将发送给AI模型获取响应
     `.trim();
@@ -63,6 +66,38 @@ export class CommandHandler {
      */
     private getStatusText(): string {
         return "✅ 状态: 运行正常";
+    }
+
+    /**
+     * 获取调试模式文本
+     */
+    private getTestText(): string {
+        return this.runBrowserTest();
+    }
+
+    /**
+     * 运行browser模块调试
+     */
+    private runBrowserTest(): string {
+        try {
+            // 动态导入browser模块进行调试
+            import("../browser/index.js").then((browserModule) => {
+                console.log("🔧 正在调试 browser 模块...");
+                
+                // 调用browser模块的功能
+                if (browserModule.puppeteer) {
+                    browserModule.puppeteer();
+                }
+                
+                console.log("✅ browser 模块调试完成");
+            }).catch((error) => {
+                console.error("❌ browser 模块调试失败:", error);
+            });
+            
+            return "🔧 已启动 browser 模块调试模式";
+        } catch (error) {
+            return `❌ 调试模式启动失败: ${error}`;
+        }
     }
 
     /**

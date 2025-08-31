@@ -17,6 +17,7 @@ export interface AIConfig {
 export interface CLIConfig {
   interactive?: boolean;
   command?: string;
+  test?: string;
 }
 
 // Agent 核心类型
@@ -26,4 +27,10 @@ export interface BrowserAgentConfig {
 }
 
 // 命令类型
-export type CommandType = 'help' | 'version' | 'status' | 'exit' | 'quit';
+export type CommandType =
+  | "help"
+  | "version"
+  | "status"
+  | "exit"
+  | "quit"
+  | "test";

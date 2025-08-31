@@ -125,7 +125,8 @@ export function createCLIProgram(_config?: CLIConfig): Command {
 
   program
     .option("-i, --interactive", "启动交互式模式")
-    .option("-c, --command <command>", "执行指定命令");
+    .option("-c, --command <command>", "执行指定命令")
+    .option("-t, --test [module]", "进入调试模式，可指定模块（默认：browser）");
 
   return program;
 }
@@ -140,5 +141,6 @@ export function parseCLIArgs(program: Command): CLIConfig {
   return {
     interactive: options.interactive || false,
     command: options.command,
+    test: options.test,
   };
 }

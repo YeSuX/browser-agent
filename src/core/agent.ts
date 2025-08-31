@@ -28,13 +28,63 @@ export class BrowserAgent {
      * 启动Agent
      */
     async start(): Promise<void> {
-        if (this.config.cli.interactive) {
+        if (this.config.cli.test !== undefined) {
+            await this.runTestMode(this.config.cli.test);
+        } else if (this.config.cli.interactive) {
             this.cliInterface.startInteractive();
         } else if (this.config.cli.command) {
             await this.executeCommand(this.config.cli.command);
         } else {
-            console.log("请使用 --interactive 启动交互式模式，或使用 --command 执行特定命令");
+            console.log("请使用 --interactive 启动交互式模式，或使用 --command 执行特定命令，或使用 --test 进入调试模式");
             process.exit(1);
+        }
+    }
+
+    /**
+     * 运行测试模式
+     */
+    private async runTestMode(module?: string): Promise<void> {
+        const targetModule = module || 'browser';
+        console.log(`🔧 进入调试模式 - 模块: ${targetModule}`);
+        
+        try {
+            if (targetModule === 'browser') {
+                await this.testBrowserModule();
+            } else {
+                console.log(`⚠️  暂不支持模块: ${targetModule}，默认调试 browser 模块`);
+                await this.testBrowserModule();
+            }
+        } catch (error) {
+            console.error(`❌ 调试模式失败: ${error}`);
+            process.exit(1);
+        }
+        
+        console.log("✅ 调试模式完成");
+        process.exit(0);
+    }
+
+    /**
+     * 测试browser模块
+     */
+    private async testBrowserModule(): Promise<void> {
+        console.log("🔍 正在加载 browser 模块...");
+        
+        try {
+            const browserModule = await import("../browser/index.js");
+            
+            console.log("✅ browser 模块加载成功");
+            console.log("📦 可用函数:", Object.keys(browserModule));
+            
+            // 测试puppeteer函数
+            if (browserModule.puppeteer) {
+                console.log("🔧 正在测试 puppeteer 函数...");
+                browserModule.puppeteer();
+            } else {
+                console.log("⚠️  puppeteer 函数不存在");
+            }
+            
+        } catch (error) {
+            throw new Error(`加载 browser 模块失败: ${error}`);
         }
     }
 
