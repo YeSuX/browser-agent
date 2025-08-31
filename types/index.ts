@@ -12,7 +12,6 @@ export interface AIConfig {
     apiKey: string;
     model?: string;
     temperature?: number;
-    maxTokens?: number;
 }
 
 // CLI 相关类型
@@ -30,5 +29,3 @@ export interface BrowserAgentConfig {
 
 // 命令类型
 export type CommandType = 'help' | 'version' | 'status' | 'exit' | 'quit';
-
-
