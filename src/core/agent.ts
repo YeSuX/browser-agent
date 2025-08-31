@@ -10,137 +10,202 @@ import { CLIInterface } from "../cli/index.js";
  * Browser Agent 核心类
  */
 export class BrowserAgent {
-    private aiProvider: AIProvider;
-    private cliInterface: CLIInterface;
-    private config: BrowserAgentConfig;
+  private aiProvider: AIProvider;
+  private cliInterface: CLIInterface;
+  private config: BrowserAgentConfig;
 
-    constructor(config: BrowserAgentConfig) {
-        this.config = config;
-        this.aiProvider = new AIProvider(config.ai);
-        this.cliInterface = new CLIInterface("1.0.0");
+  constructor(config: BrowserAgentConfig) {
+    this.config = config;
+    this.aiProvider = new AIProvider(config.ai);
+    this.cliInterface = new CLIInterface("1.0.0");
 
-        // 设置CLI输入处理器
-        this.cliInterface.setInputHandler(this.handleUserInput.bind(this));
-        this.cliInterface.setExitHandler(this.handleExit.bind(this));
+    // 设置CLI输入处理器
+    this.cliInterface.setInputHandler(this.handleUserInput.bind(this));
+    this.cliInterface.setExitHandler(this.handleExit.bind(this));
+    this.cliInterface.setDebugModeHandler(this.enterDebugMode.bind(this));
+  }
+
+  /**
+   * 启动Agent
+   */
+  async start(): Promise<void> {
+    if (this.config.cli.interactive) {
+      this.cliInterface.startInteractive();
+    } else if (this.config.cli.command) {
+      await this.executeCommand(this.config.cli.command);
+    } else {
+      console.log(
+        "请使用 --interactive 启动交互式模式，或使用 --command 执行特定命令"
+      );
+      console.log("💡 在交互式模式中输入 'debug' 可进入调试模式");
+      process.exit(1);
     }
+  }
 
-    /**
-     * 启动Agent
-     */
-    async start(): Promise<void> {
-        if (this.config.cli.test !== undefined) {
-            await this.runTestMode(this.config.cli.test);
-        } else if (this.config.cli.interactive) {
-            this.cliInterface.startInteractive();
-        } else if (this.config.cli.command) {
-            await this.executeCommand(this.config.cli.command);
-        } else {
-            console.log("请使用 --interactive 启动交互式模式，或使用 --command 执行特定命令，或使用 --test 进入调试模式");
-            process.exit(1);
-        }
+  /**
+   * 进入调试模式
+   */
+  private async enterDebugMode(): Promise<void> {
+    console.log("🔧 进入调试模式 - 模块: browser");
+    console.log("👀 启动观察环境...");
+
+    try {
+      await this.startBrowserDebugEnvironment();
+    } catch (error) {
+      console.error(`❌ 调试模式失败: ${error}`);
     }
+  }
 
-    /**
-     * 运行测试模式
-     */
-    private async runTestMode(module?: string): Promise<void> {
-        const targetModule = module || 'browser';
-        console.log(`🔧 进入调试模式 - 模块: ${targetModule}`);
-        
-        try {
-            if (targetModule === 'browser') {
-                await this.testBrowserModule();
+  /**
+   * 启动Browser调试观察环境
+   */
+  private async startBrowserDebugEnvironment(): Promise<void> {
+    console.log("🔍 正在初始化 browser 调试环境...");
+
+    try {
+      const browserModule = await import("../browser/index.js");
+
+      console.log("✅ browser 模块加载成功");
+      console.log("📦 可用函数:", Object.keys(browserModule));
+
+      // 设置调试环境的输入处理器
+      this.cliInterface.setInputHandler(async (input: string) => {
+        await this.handleDebugCommand(input, browserModule);
+      });
+
+      console.log("👀 调试环境已启动！");
+      console.log("📝 可用调试命令:");
+      console.log("  test     - 运行 puppeteerTest 函数");
+      console.log("  list     - 显示所有可用函数");
+      console.log("  help     - 显示调试帮助");
+      console.log("  normal   - 返回正常模式");
+      console.log("  exit     - 退出程序");
+      console.log("💡 提示: 直接输入函数名也可以执行对应函数\n");
+    } catch (error) {
+      throw new Error(`初始化 browser 调试环境失败: ${error}`);
+    }
+  }
+
+  /**
+   * 处理调试命令
+   */
+  private async handleDebugCommand(
+    input: string,
+    browserModule: any
+  ): Promise<void> {
+    const command = input.trim().toLowerCase();
+    console.log(`🔍 [DEBUG] handleDebugCommand 被调用，输入命令: ${command}`);
+    console.log(`debug-mode: ${command}`);
+
+    try {
+      switch (command) {
+        case "test":
+        case "puppeteertest":
+          if (browserModule.puppeteerTest) {
+            console.log("🔧 正在执行 puppeteerTest...");
+            await browserModule.puppeteerTest();
+            console.log("✅ puppeteerTest 执行完成");
+          } else {
+            console.log("⚠️  puppeteerTest 函数不存在");
+          }
+          break;
+
+        case "list":
+          console.log("📦 所有可用函数:");
+          Object.keys(browserModule).forEach((key) => {
+            const type = typeof browserModule[key];
+            console.log(`  ${key} (${type})`);
+          });
+          break;
+
+        case "help":
+          console.log("📝 调试命令帮助:");
+          console.log("  test     - 运行 puppeteerTest 函数");
+          console.log("  list     - 显示所有可用函数");
+          console.log("  help     - 显示这个帮助信息");
+          console.log("  normal   - 返回正常模式");
+          console.log("  exit     - 退出程序");
+          console.log("💡 也可以直接输入函数名来执行");
+          break;
+
+        case "normal":
+        case "back":
+          // 返回正常模式
+          console.log("🔙 返回正常模式");
+          this.cliInterface.setInputHandler(this.handleUserInput.bind(this));
+          break;
+
+        default:
+          // 尝试直接执行函数
+          if (browserModule[input.trim()]) {
+            const func = browserModule[input.trim()];
+            if (typeof func === "function") {
+              console.log(`🔧 正在执行 ${input.trim()}...`);
+              await func();
+              console.log(`✅ ${input.trim()} 执行完成`);
             } else {
-                console.log(`⚠️  暂不支持模块: ${targetModule}，默认调试 browser 模块`);
-                await this.testBrowserModule();
+              console.log(`⚠️  ${input.trim()} 不是一个函数`);
             }
-        } catch (error) {
-            console.error(`❌ 调试模式失败: ${error}`);
-            process.exit(1);
-        }
-        
-        console.log("✅ 调试模式完成");
-        process.exit(0);
+          } else {
+            console.log(`⚠️  未知命令: ${input}`);
+            console.log("💡 输入 'help' 查看可用命令");
+          }
+          break;
+      }
+    } catch (error) {
+      console.error(`❌ 执行命令失败: ${error}`);
     }
+  }
 
-    /**
-     * 测试browser模块
-     */
-    private async testBrowserModule(): Promise<void> {
-        console.log("🔍 正在加载 browser 模块...");
-        
-        try {
-            const browserModule = await import("../browser/index.js");
-            
-            console.log("✅ browser 模块加载成功");
-            console.log("📦 可用函数:", Object.keys(browserModule));
-            
-            // 测试puppeteer函数
-            if (browserModule.puppeteer) {
-                console.log("🔧 正在测试 puppeteer 函数...");
-                browserModule.puppeteer();
-            } else {
-                console.log("⚠️  puppeteer 函数不存在");
-            }
-            
-        } catch (error) {
-            throw new Error(`加载 browser 模块失败: ${error}`);
-        }
+  /**
+   * 执行命令
+   */
+  private async executeCommand(command: string): Promise<void> {
+    console.log(`🚀 执行命令: ${command}`);
+    await this.handleUserInput(command);
+  }
+
+  /**
+   * 处理用户输入
+   */
+  private async handleUserInput(input: string): Promise<void> {
+    console.log(`📝 收到输入: ${input}`);
+
+    try {
+      console.log("🤖 正在发送给AI模型...");
+      await this.processWithAI(input);
+    } catch (error) {
+      console.error("❌ AI处理失败:", error);
     }
+  }
 
+  /**
+   * 使用AI处理输入
+   */
+  private async processWithAI(input: string): Promise<void> {
+    console.log("📤 AI流式响应:");
 
+    try {
+      const messages: AIMessage[] = [{ role: "user", content: input }];
+      const stream = this.aiProvider.generateStreamText(messages);
 
-    /**
-     * 执行命令
-     */
-    private async executeCommand(command: string): Promise<void> {
-        console.log(`🚀 执行命令: ${command}`);
-        await this.handleUserInput(command);
+      for await (const chunk of stream) {
+        process.stdout.write(chunk);
+      }
+
+      console.log(""); // 输出结束后换行
+    } catch (error) {
+      throw new Error(`AI模型调用失败: ${error}`);
     }
+  }
 
-    /**
-     * 处理用户输入
-     */
-    private async handleUserInput(input: string): Promise<void> {
-        console.log(`📝 收到输入: ${input}`);
-
-        try {
-            console.log("🤖 正在发送给AI模型...");
-            await this.processWithAI(input);
-        } catch (error) {
-            console.error("❌ AI处理失败:", error);
-        }
-    }
-
-    /**
-     * 使用AI处理输入
-     */
-    private async processWithAI(input: string): Promise<void> {
-        console.log("📤 AI流式响应:");
-
-        try {
-            const messages: AIMessage[] = [{ role: "user", content: input }];
-            const stream = this.aiProvider.generateStreamText(messages);
-
-            for await (const chunk of stream) {
-                process.stdout.write(chunk);
-            }
-
-            console.log(""); // 输出结束后换行
-        } catch (error) {
-            throw new Error(`AI模型调用失败: ${error}`);
-        }
-    }
-
-    /**
-     * 处理退出
-     */
-    private handleExit(): void {
-        console.log("Browser Agent 已停止");
-        process.exit(0);
-    }
-
-
+  /**
+   * 处理退出
+   */
+  private handleExit(): void {
+    console.log("Browser Agent 已停止");
+    process.exit(0);
+  }
 }
 
 /**

@@ -4,8 +4,8 @@
 
 // AI 相关类型
 export interface AIMessage {
-    role: 'user' | 'assistant' | 'system';
-    content: string;
+  role: "user" | "assistant" | "system";
+  content: string;
 }
 
 export interface AIConfig {
@@ -17,13 +17,12 @@ export interface AIConfig {
 export interface CLIConfig {
   interactive?: boolean;
   command?: string;
-  test?: string;
 }
 
 // Agent 核心类型
 export interface BrowserAgentConfig {
-    ai: AIConfig;
-    cli: CLIConfig;
+  ai: AIConfig;
+  cli: CLIConfig;
 }
 
 // 命令类型
@@ -33,4 +32,4 @@ export type CommandType =
   | "status"
   | "exit"
   | "quit"
-  | "test";
+  | "debug";
